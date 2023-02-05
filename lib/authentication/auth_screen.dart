@@ -108,7 +108,8 @@ class _AuthCardState extends State<AuthCard> {
     );
   }
 
-  Future<void> _submit() async {
+  Future<dynamic> _submit() async {
+
     if (!_formKey.currentState.validate()) {
       // Invalid!
       return;
@@ -134,16 +135,18 @@ class _AuthCardState extends State<AuthCard> {
           _authData['customer_gender'],
           _authData['customer_dob'],
         );
+        Navigator.of(context).pushNamed(
+          '/reg_otp',
+        );
+
       }
-      Navigator.of(context).pushNamed(
-        '/reg_otp',
-        // arguments: {"id": id},
-      );
+
     } on HttpException catch (error) {
       var errorMessage = 'Authentication failed';
-      print(error.toString());
+      // print(error.toString());
       if (error.toString().contains('customer_email') && error.toString().contains('customer_contact')) {
         errorMessage = 'This Email & Contact is already in use';
+
       }
       else if (error.toString().contains('Email already exists')) {
         errorMessage = 'this email address is already in use';

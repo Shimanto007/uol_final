@@ -6,9 +6,8 @@ import 'package:provider/provider.dart';
 import '../providers/auth.dart';
 import '../models/http_exception.dart';
 import '../cart/cart_screen.dart';
-import '../providers/auth.dart';
 
-
+enum AuthMode { Signup, Login }
 
 class OtpScreen extends StatelessWidget {
   static const routeName = '/reg_otp';
@@ -44,7 +43,7 @@ class OtpScreen extends StatelessWidget {
                     child: Container(
                       margin: EdgeInsets.only(bottom: 20.0),
                       padding:
-                          EdgeInsets.symmetric(vertical: 8.0, horizontal: 20.0),
+                      EdgeInsets.symmetric(vertical: 8.0, horizontal: 20.0),
                       // ..translate(-10.0),
                       child: Text(
                         'Ultimate Organic Life',
@@ -72,16 +71,22 @@ class OtpScreen extends StatelessWidget {
 }
 
 class OtpCard extends StatefulWidget {
+  const OtpCard({
+    Key key,
+  }) : super(key: key);
 
   @override
-  _OtpCardState createState() => _OtpCardState();
+  _OtpCard createState() => _OtpCard();
 }
 
-class _OtpCardState extends State<OtpCard> {
+class _OtpCard extends State<OtpCard> {
+  final GlobalKey<FormState> _formKey = GlobalKey();
   Map<String, String> _authData = {
     'otp': '',
   };
   var _isLoading = false;
+
+
 
   void _showErrorDialog(String message) {
     showDialog(
@@ -91,35 +96,42 @@ class _OtpCardState extends State<OtpCard> {
         content: Text(message),
         actions: <Widget>[
           TextButton(
-              onPressed: () {
-                Navigator.of(ctx).pop();
-              },
-              child: Text('Okay'),
+            onPressed: () {
+              Navigator.of(ctx).pop();
+            },
+            child: Text('Okay'),
           )
         ],
       ),
     );
   }
 
-  Future<void> _submit() async {
+  Future<dynamic> _submit() async {
+    if (!_formKey.currentState.validate()) {
+      // Invalid!
+      return;
+    }
+    _formKey.currentState.save();
     setState(() {
-      _isLoading= true;
+      _isLoading = true;
     });
-
     try {
         // Log user in
         await Provider.of<Auth>(context, listen: false).otp_verification(
           _authData['otp'],
         );
-      Navigator.of(context).pushNamed(
-        '/reg_otp',
-      );
-    } catch (err) {
-      _showErrorDialog(err);
+        Navigator.of(context).pushNamed(
+          '/auth',
+        );
+    } catch (error) {
+      const errorMessage = 'Could not authenticate. Please try again later';
+      _showErrorDialog(error);
+      // print(error);
     }
-
-
-}
+    setState(() {
+      _isLoading = false;
+    });
+  }
 
 
   @override
@@ -129,25 +141,31 @@ class _OtpCardState extends State<OtpCard> {
     return Container(
       height: 260,
       constraints:
-          BoxConstraints(minHeight: 260),
+      BoxConstraints(minHeight: 260),
       width: deviceSize.width * 0.85,
       padding: EdgeInsets.all(16.0),
       child: Form(
+        key: _formKey,
         child: SingleChildScrollView(
           child: Column(
             children: <Widget>[
                 TextFormField(
                   decoration: InputDecoration(
-                    labelText: 'Verify OTP',
+                    labelText: 'Your Otp',
                     suffixStyle: TextStyle(
                       fontFamily: 'Lato',
                     ),
                   ),
-                  keyboardType: TextInputType.name,
+                  keyboardType: TextInputType.number,
                   onSaved: (value) {
                     _authData['otp'] = value;
                   },
                 ),
+
+
+              SizedBox(
+                height: 20,
+              ),
               if (_isLoading)
                 CircularProgressIndicator()
               else
@@ -159,16 +177,14 @@ class _OtpCardState extends State<OtpCard> {
                     ),
                   ),
                   onPressed: _submit,
-                  // onPressed: () {},
                   style: ButtonStyle(
                     backgroundColor:
-                        MaterialStateProperty.all(Color(0xFF0098B8)),
+                    MaterialStateProperty.all(Color(0xFF0098B8)),
                     shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                       RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                    // padding: EdgeInsets.all(10.0),
                   ),
                 ),
             ],

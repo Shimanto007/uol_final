@@ -66,8 +66,9 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget>
       child: Consumer<Auth>(
         builder: (ctx, auth, _) => MaterialApp(
           debugShowCheckedModeBanner: false,
-          home: AuthScreen(),
+          home: MainHomePage(),
           routes: {
+            '/auth' : (item) => AuthScreen(),
             '/reg_otp' : (item) => OtpScreen(),
             'home-page': (item) => NewStatefulWidget(),
             '/category-product': (ctx) => CategoryProductsScreen(),

@@ -12,7 +12,8 @@ class Auth with ChangeNotifier {
   DateTime _expiryDate;
   String _userId;
   String _id;
-  String customer_reg_id;
+  String userId;
+  dynamic customer_id;
 
   bool get isAuth {
     return _token != null;
@@ -29,14 +30,19 @@ class Auth with ChangeNotifier {
       return _id;
     }
   }
+  // Future<void> saveData(String key, String value) async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   prefs.setString(key, value);
+  // }
 
-  Future<void> signup(
+  Future<dynamic> signup(
     String name,
     String email,
     String password,
     String contact_number,
     String gender,
     String birthdate,
+
   ) async {
     const urs = 'https://ultimateapi.hostprohub.com/api/register-customer';
     try {
@@ -48,17 +54,10 @@ class Auth with ChangeNotifier {
         'customer_gender': gender,
         'customer_dob': birthdate,
       });
-      SharedPreferences localStorage = await SharedPreferences.getInstance();
-      print(localStorage);
 
-      print(customer_reg_id);
       final responseData = json.decode(response.body);
+      print(responseData);
 
-      if (responseData["success_message"] == 'Registration Successful!'){
-        // _id = (responseData["customer"]["id"]);
-        // print(_id);
-        notifyListeners();
-      }
       if (responseData["success"] == false) {
         if (responseData["message"].toString().contains("customer_contact") &&
             responseData["message"].toString().contains("customer_email")) {
@@ -75,14 +74,9 @@ class Auth with ChangeNotifier {
               responseData["message"]["customer_contact"].toString());
         }
       }
-      // print(responseData["customer"]["id"]);
-      // customer_reg_id = responseData["customer"]["id"];
-      // customer_reg_id = responseData["customer"]["id"];
-      // print(customer_reg_id);
-
-      print(responseData);
+      print(responseData["customer"]["id"]);
+      customer_id = responseData["customer"]["id"];
       notifyListeners();
-
 
     } catch (error) {
       throw error;
@@ -90,13 +84,14 @@ class Auth with ChangeNotifier {
 
   }
 
-  Future<void> otp_verification(String otp) async {
-    print(id);
-    final url = 'https://ultimateapi.hostprohub.com/api/otp-verification/${id}';
+  Future<dynamic> otp_verification(dynamic otp) async {
+
+    print(customer_id);
+    final url = 'https://ultimateapi.hostprohub.com/api/otp-verification/${customer_id}';
     print(url);
     try {
       final response = await http.post(Uri.parse(url), body: {
-        'otp': otp,
+        'otp':otp,
       });
       final responseData = json.decode(response.body);
       print(responseData);
@@ -112,7 +107,7 @@ class Auth with ChangeNotifier {
 
 
 
-  Future<void> login(String email, String customer_password) async {
+  Future<dynamic> login(String email, String customer_password) async {
     const url = 'https://ultimateapi.hostprohub.com/api/customer/login';
     try {
       final response = await http.post(Uri.parse(url), body: {
